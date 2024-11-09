@@ -1,14 +1,21 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { DEFAULT_IMG } from "../../config/constants";
 
 interface IUser extends Document {
+	profilePic: string;
 	name: string;
 	email: string;
 	phoneNumber: string;
 	password: string;
+	verified: boolean;
 }
 
 const userModel = new Schema<IUser>(
 	{
+		profilePic: {
+			type: String,
+			default: DEFAULT_IMG,
+		},
 		name: {
 			type: String,
 			required: true,
@@ -28,6 +35,10 @@ const userModel = new Schema<IUser>(
 			type: String,
 			required: true,
 			minlength: 8,
+		},
+		verified: {
+			type: Boolean,
+			default: false,
 		},
 	},
 	{ timestamps: true },
