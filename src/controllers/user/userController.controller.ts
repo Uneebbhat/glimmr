@@ -146,25 +146,21 @@ export const verifyOTP = async (req: Request, res: Response) => {
 			return ErrorHandler.send(res, 404, "Invalid OTP");
 		}
 
-		if ((findOTP?.expiresAt ?? "") < new Date()) {
-			await findOTP?.deleteOne();
+		if (findOTP.expiresAt < new Date()) {
+			await findOTP.deleteOne();
 			return ErrorHandler.send(res, 400, "OTP has expired");
 		}
 
-		// console.log("OTP verified:", findOTP);
-
-		const user = await User.findById(findOTP?.userId);
+		const user = await User.findById(findOTP.userId);
 		if (!user) {
 			return ErrorHandler.send(res, 404, "User not found");
 		}
 
-		if (user) {
-			user.verified = true;
-			user.save();
-		}
+		user.verified = true;
+		await user.save();
 
 		ResponseHandler.send(res, 200, "OTP verified successfully");
-		await findOTP?.deleteOne();
+		await findOTP.deleteOne();
 	} catch (err: any) {
 		return ErrorHandler.send(res, 500, "Internal Server Error");
 	}
