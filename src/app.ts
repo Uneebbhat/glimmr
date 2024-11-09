@@ -1,7 +1,9 @@
 import express, { Application, NextFunction, Request, Response } from "express";
+import cookieParser from "cookie-parser";
 import dbConnect from "./config/dbConnect";
 import ErrorHandler from "./utils/ErrorHandler";
 import userRouter from "./routes/user/userRouter.routes";
+import errorHandler from "./middlewares/errorHandler";
 
 const app: Application = express();
 
@@ -9,6 +11,8 @@ dbConnect();
 
 // Middlewares
 app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 // Main routes
 app.use("/api", userRouter);
@@ -18,10 +22,7 @@ app.use((req: Request, res: Response) => {
 	ErrorHandler.send(res, 404, "Route not found");
 });
 
-// Global error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-	console.error(err.stack);
-	ErrorHandler.send(res, 500, "Internal Server Error");
-});
+// Global error handler (should be the last middleware)
+app.use(errorHandler);
 
 export default app;
