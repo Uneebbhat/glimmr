@@ -147,8 +147,9 @@ export const verifyOTP = async (req: Request, res: Response) => {
 		}
 
 		if (findOTP.expiresAt < new Date()) {
+			ErrorHandler.send(res, 400, "OTP has expired");
 			await findOTP.deleteOne();
-			return ErrorHandler.send(res, 400, "OTP has expired");
+			return;
 		}
 
 		const user = await User.findById(findOTP.userId);
