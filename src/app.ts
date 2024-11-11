@@ -1,9 +1,10 @@
-import express, { Application, NextFunction, Request, Response } from "express";
+import express, { Application, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import dbConnect from "./config/dbConnect";
 import ErrorHandler from "./utils/ErrorHandler";
-import userRouter from "./routes/user/userRouter.routes";
 import errorHandler from "./middlewares/errorHandler";
+import userRouter from "./routes/user/userRouter.routes";
+import shopRouter from "./routes/shop/shopRouter.routes";
 
 const app: Application = express();
 
@@ -15,7 +16,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Main routes
-app.use("/api", userRouter);
+app.use("/api", userRouter, shopRouter);
 
 // 404 Handler for undefined routes
 app.use((req: Request, res: Response) => {

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config/constants";
-import ErrorHandler from "./ErrorHandler";
+import ErrorHandler from "../utils/ErrorHandler";
 import { Response } from "express";
 
 interface UserToken {
