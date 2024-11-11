@@ -4,11 +4,13 @@ import UserSignupSchema from "../../schemas/user/UserSignupSchema.schema";
 import ErrorHandler from "../../utils/ErrorHandler";
 import User from "../../models/user/User.model";
 import bcrypt from "bcrypt";
-import generateToken from "../../utils/generateToken";
+import generateToken from "../../helpers/generateToken";
 import UserDTO from "../../dto/UserDTO.dto";
 import UserLoginSchema from "../../schemas/user/UserLoginSchema.schema";
 import sendEmail from "../../utils/sendEmail";
 import VerifyOTP from "../../models/VerifyOTP.model";
+import generateOTP from "../../helpers/generateOTP";
+import verifySentOTP from "../../helpers/verifySentOTP";
 
 export const signup = async (
 	req: Request,
@@ -33,15 +35,39 @@ export const signup = async (
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 10);
-
 		const newUser = await User.create({
 			name,
 			email,
 			phoneNumber,
 			password: hashedPassword,
 		});
-		if (!newUser) {
-			return ErrorHandler.send(res, 400, "An error occured");
+
+		try {
+			await verifySentOTP({
+				userId: newUser._id!.toString(),
+				otp: generateOTP,
+				expiresAt: Date.now() + 600000,
+			});
+
+			await sendEmail(
+				email,
+				"Your OTP Verification Code for Account Setup",
+				"Please use the OTP code in the app to create your account.",
+				`
+				<p>Dear ${name},</p>
+				<p>Thank you for signing up! Please use the OTP code below to complete your account creation. This code is valid for 5 minutes:</p>
+				<h2 style="color: #4CAF50;">${generateOTP}</h2>
+				<p>If you did not initiate this request, please ignore this email.</p>
+				<p>Best regards,<br>Glimmr Team</p>
+				`,
+			);
+		} catch (otpError) {
+			await User.findByIdAndDelete(newUser._id);
+			return ErrorHandler.send(
+				res,
+				500,
+				"Failed to set up OTP verification. Please try again.",
+			);
 		}
 
 		const token = generateToken(
@@ -53,31 +79,7 @@ export const signup = async (
 			res,
 		);
 
-		const generateOTP = Math.floor(Math.random() * 9000) + 1000;
-
-		const verifyOTP = new VerifyOTP({
-			userId: newUser._id,
-			otp: generateOTP,
-			expiryTime: Date.now() + 600000,
-		});
-
-		verifyOTP.save();
-
-		await sendEmail(
-			email,
-			"Your OTP Verification Code for Account Setup",
-			"Please use the OTP code in the app to create your account.",
-			`
-    <p>Dear ${name},</p>
-    <p>Thank you for signing up! Please use the OTP code below to complete your account creation. This code is valid for 15 minutes:</p>
-    <h2 style="color: #4CAF50;">${generateOTP}</h2>
-    <p>If you did not initiate this request, please ignore this email.</p>
-    <p>Best regards,<br>Glimmr Team</p>
-  `,
-		);
-
 		const userDTO = new UserDTO(newUser);
-
 		ResponseHandler.send(
 			res,
 			201,
@@ -163,6 +165,37 @@ export const verifyOTP = async (req: Request, res: Response) => {
 		ResponseHandler.send(res, 200, "OTP verified successfully");
 		await findOTP.deleteOne();
 	} catch (err: any) {
+		return ErrorHandler.send(res, 500, "Internal Server Error");
+	}
+};
+
+export const generateNewOTP = async (req: Request, res: Response) => {
+	const { userId } = req.body;
+
+	try {
+		const user = await User.findOne({ _id: userId });
+		if (!user) {
+			return ErrorHandler.send(res, 404, "User not found");
+		}
+
+		const newOTP = generateOTP;
+
+		const generateNewOTP = await VerifyOTP.create({
+			userId: user._id,
+			otp: newOTP,
+			createdAt: Date.now(),
+			expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+		});
+
+		if (generateNewOTP.expiresAt < new Date()) {
+			ErrorHandler.send(res, 400, "OTP has expired");
+			await generateNewOTP.deleteOne();
+			return;
+		}
+
+		ResponseHandler.send(res, 201, "OTP created", generateNewOTP);
+	} catch (err: any) {
+		console.error("Error generating OTP:", err);
 		return ErrorHandler.send(res, 500, "Internal Server Error");
 	}
 };
