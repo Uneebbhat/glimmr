@@ -25,7 +25,8 @@ const verifyOTPModel = new Schema<IVerifyOTP>({
 	},
 	expiresAt: {
 		type: Date,
-		default: Date.now() + 5 * 60 * 1000,
+		required: true,
+		index: { expires: "5m" },
 	},
 });
 
