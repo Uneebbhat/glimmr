@@ -20,7 +20,7 @@ export const createShop = async (
 		return next(error);
 	}
 	const {
-		userName,
+		ownerName,
 		shopName,
 		shopEmail,
 		shopPhoneNumber,
@@ -44,7 +44,7 @@ export const createShop = async (
 		const hashedPassword = await bcrypt.hash(password, 10);
 
 		const newShop = await Shop.create({
-			userName,
+			ownerName,
 			shopName,
 			shopEmail,
 			shopPhoneNumber,
@@ -57,31 +57,32 @@ export const createShop = async (
 		}
 
 		try {
+			// Store in database
+			const otpValue = Math.floor(Math.random() * 9000) + 1000;
+			// console.log(otpValue);
+
 			await verifySentOTP({
 				userId: newShop._id!.toString(),
-				otp: generateOTP,
+				otp: otpValue,
+				otpType: "shop",
 				expiresAt: Date.now() + 600000,
 			});
 
 			await sendEmail(
 				shopEmail,
-				"Your OTP Verification Code for Account Setup",
-				"Please use the OTP code in the app to create your account.",
+				"Your OTP Verification Code for Shop Setup",
+				"Please use the OTP code in the app to complete your shop setup.",
 				`
-				<p>Dear ${shopName},</p>
-				<p>Thank you for signing up! Please use the OTP code below to complete your account creation. This code is valid for 5 minutes:</p>
-				<h2 style="color: #4CAF50;">${generateOTP}</h2>
-				<p>If you did not initiate this request, please ignore this email.</p>
-				<p>Best regards,<br>Glimmr Team</p>
-				`,
+	<p>Dear ${shopName},</p>
+	<p>Welcome to Glimmr! We're thrilled to have you onboard. To finalize your shop setup, please enter the OTP code below within the next 5 minutes:</p>
+	<h2 style="color: #4CAF50;">${otpValue}</h2>
+	<p>If you did not request this setup, please disregard this email.</p>
+	<p>Warm regards,<br>The Glimmr Team</p>
+	`,
 			);
-		} catch (otpError) {
+		} catch (otpError: any) {
 			await Shop.findByIdAndDelete(newShop._id);
-			return ErrorHandler.send(
-				res,
-				500,
-				"Failed to set up OTP verification. Please try again.",
-			);
+			return ErrorHandler.send(res, 500, otpError);
 		}
 
 		const token = generateToken(

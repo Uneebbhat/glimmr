@@ -1,8 +1,14 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
+enum OTPType {
+	user = "user",
+	shop = "shop",
+}
+
 interface IVerifyOTP extends Document {
 	userId: Types.ObjectId;
 	otp: string;
+	otpType: OTPType;
 	createdAt: Date;
 	expiresAt: Date;
 }
@@ -16,8 +22,11 @@ const verifyOTPModel = new Schema<IVerifyOTP>({
 	otp: {
 		type: String,
 		required: true,
-		minlength: 4,
-		maxlength: 4,
+	},
+	otpType: {
+		type: String,
+		enum: Object.values(OTPType),
+		default: OTPType.user,
 	},
 	createdAt: {
 		type: Date,

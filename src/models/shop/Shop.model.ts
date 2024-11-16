@@ -1,8 +1,9 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { DEFAULT_SHOP } from "../../config/constants";
 
 interface IShop extends Document {
-	shopProfileImage: string;
-	userName: string;
+	shopProfilePic: string;
+	ownerName: string;
 	shopName: string;
 	shopEmail: string;
 	shopPhoneNumber: string;
@@ -12,14 +13,16 @@ interface IShop extends Document {
 		shopCity: string;
 		cityArea: string;
 	};
+	verified: boolean;
 }
 
 const shopModel = new Schema<IShop>(
 	{
-		shopProfileImage: {
+		shopProfilePic: {
 			type: String,
+			default: DEFAULT_SHOP,
 		},
-		userName: {
+		ownerName: {
 			type: String,
 			required: true,
 			minlength: 3,
@@ -58,6 +61,10 @@ const shopModel = new Schema<IShop>(
 				type: String,
 				required: true,
 			},
+		},
+		verified: {
+			type: Boolean,
+			default: false,
 		},
 	},
 	{ timestamps: true },

@@ -1,37 +1,41 @@
 interface ShopDTOClass {
 	_id: string | any;
-	userName: string;
+	ownerName: string;
 	shopName: string;
 	shopEmail: string;
-	shopProfilePic?: string;
+	shopProfilePic: string;
 	shopPhoneNumber: string;
 	location: {
 		shopAddress: string;
 		shopCity: string;
 		cityArea: string;
 	};
+	verified: boolean;
 }
 
 class ShopDTO {
 	_id: string | any;
-	userName: string;
+	ownerName: string;
 	shopName: string;
 	shopEmail: string;
-	shopProfilePic?: string;
+	shopProfilePic: string;
 	shopPhoneNumber: string;
 	location: {
 		shopAddress: string;
 		shopCity: string;
 		cityArea: string;
 	};
+	verified: boolean;
+
 	constructor(shop: ShopDTOClass) {
 		this._id = shop._id;
-		this.userName = shop.userName;
+		this.ownerName = shop.ownerName;
 		this.shopName = shop.shopName;
 		this.shopEmail = shop.shopEmail;
 		this.shopProfilePic = shop.shopProfilePic;
 		this.shopPhoneNumber = shop.shopPhoneNumber;
 		this.location = { ...shop.location };
+		this.verified = shop.verified;
 	}
 }
 

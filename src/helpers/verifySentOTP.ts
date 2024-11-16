@@ -6,13 +6,14 @@ interface VerifyOTPPROPS {
 	userId: string | any;
 	otp: string | number;
 	expiresAt: Date | number;
+	otpType: string;
 }
 
 const verifySentOTP = async (user: VerifyOTPPROPS) => {
-	const otpValue = generateOTP;
 	const newOTP = new VerifyOTP({
 		userId: user.userId,
-		otp: otpValue,
+		otp: user.otp,
+		otpType: user.otpType,
 		expiresAt: new Date(Date.now() + 600000),
 	});
 	await newOTP.save();
