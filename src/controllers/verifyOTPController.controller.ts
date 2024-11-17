@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 import ResponseHandler from "../utils/ResponseHandler";
 import ErrorHandler from "../utils/ErrorHandler";
 import User from "../models/user/User.model";
-import generateOTP from "../helpers/generateOTP";
+// import generateOTP from "../helpers/generateOTP";
 
 export const verifyOTP = async (req: Request, res: Response) => {
 	const { otp } = req.body;
@@ -81,7 +81,7 @@ export const generateNewOTP = async (req: Request, res: Response) => {
 		} else {
 			const shop = await Shop.findOne({ _id: userId });
 			if (!shop) {
-				return ErrorHandler.send(res, 404, "User not found");
+				return ErrorHandler.send(res, 404, "Shop not found");
 			}
 
 			const newOTP = Math.floor(Math.random() * 9000) + 1000;
