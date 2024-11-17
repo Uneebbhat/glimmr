@@ -5,6 +5,7 @@ import ErrorHandler from "./utils/ErrorHandler";
 import errorHandler from "./middlewares/errorHandler";
 import userRouter from "./routes/user/userRouter.routes";
 import shopRouter from "./routes/shop/shopRouter.routes";
+import verifyOTPRouter from "./routes/verifyOTPRouter.routes";
 
 const app: Application = express();
 
@@ -16,7 +17,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Main routes
-app.use("/api", userRouter, shopRouter);
+app.use("/api", userRouter, shopRouter, verifyOTPRouter);
 
 // 404 Handler for undefined routes
 app.use((req: Request, res: Response) => {

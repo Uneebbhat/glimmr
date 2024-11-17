@@ -1,14 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import ResponseHandler from "../../utils/ResponseHandler";
-import UserSignupSchema from "../../schemas/user/UserSignupSchema.schema";
 import ErrorHandler from "../../utils/ErrorHandler";
+import UserSignupSchema from "../../schemas/user/UserSignupSchema.schema";
 import User from "../../models/user/User.model";
 import bcrypt from "bcrypt";
 import generateToken from "../../helpers/generateToken";
 import UserDTO from "../../dto/UserDTO.dto";
 import UserLoginSchema from "../../schemas/user/UserLoginSchema.schema";
 import sendEmail from "../../utils/sendEmail";
-import VerifyOTP from "../../models/VerifyOTP.model";
 import generateOTP from "../../helpers/generateOTP";
 import verifySentOTP from "../../helpers/verifySentOTP";
 
@@ -43,9 +42,12 @@ export const signup = async (
 		});
 
 		try {
+			const otpValue = Math.floor(Math.random() * 9000) + 1000;
+			console.log(otpValue);
 			await verifySentOTP({
 				userId: newUser._id!.toString(),
-				otp: generateOTP,
+				otp: otpValue,
+				otpType: "user",
 				expiresAt: Date.now() + 600000,
 			});
 
@@ -134,68 +136,6 @@ export const login = async (req: Request, res: Response) => {
 			token,
 		);
 	} catch (err: any) {
-		return ErrorHandler.send(res, 500, "Internal Server Error");
-	}
-};
-
-export const verifyOTP = async (req: Request, res: Response) => {
-	const { otp } = req.body;
-
-	try {
-		const findOTP = await VerifyOTP.findOne({ otp });
-
-		if (!findOTP) {
-			return ErrorHandler.send(res, 404, "Invalid OTP");
-		}
-
-		if (findOTP.expiresAt < new Date()) {
-			ErrorHandler.send(res, 400, "OTP has expired");
-			await findOTP.deleteOne();
-			return;
-		}
-
-		const user = await User.findById(findOTP.userId);
-		if (!user) {
-			return ErrorHandler.send(res, 404, "User not found");
-		}
-
-		user.verified = true;
-		await user.save();
-
-		ResponseHandler.send(res, 200, "OTP verified successfully");
-		await findOTP.deleteOne();
-	} catch (err: any) {
-		return ErrorHandler.send(res, 500, "Internal Server Error");
-	}
-};
-
-export const generateNewOTP = async (req: Request, res: Response) => {
-	const { userId } = req.body;
-
-	try {
-		const user = await User.findOne({ _id: userId });
-		if (!user) {
-			return ErrorHandler.send(res, 404, "User not found");
-		}
-
-		const newOTP = generateOTP;
-
-		const generateNewOTP = await VerifyOTP.create({
-			userId: user._id,
-			otp: newOTP,
-			createdAt: Date.now(),
-			expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-		});
-
-		if (generateNewOTP.expiresAt < new Date()) {
-			ErrorHandler.send(res, 400, "OTP has expired");
-			await generateNewOTP.deleteOne();
-			return;
-		}
-
-		ResponseHandler.send(res, 201, "OTP created", generateNewOTP);
-	} catch (err: any) {
-		console.error("Error generating OTP:", err);
 		return ErrorHandler.send(res, 500, "Internal Server Error");
 	}
 };
