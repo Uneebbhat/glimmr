@@ -139,3 +139,79 @@ export const login = async (req: Request, res: Response) => {
 		return ErrorHandler.send(res, 500, "Internal Server Error");
 	}
 };
+
+export const forgotPassword = async (req: Request, res: Response) => {
+	const { email } = req.body;
+
+	try {
+		if (!email) {
+			return ErrorHandler.send(res, 400, "Please provide your email address");
+		}
+
+		const user = await User.findOne({ email });
+		if (!user) {
+			return ErrorHandler.send(res, 404, "User not found with this email");
+		}
+
+		try {
+			const otpValue = Math.floor(Math.random() * 9000) + 1000;
+			console.log(otpValue);
+			await verifySentOTP({
+				userId: user._id!.toString(),
+				otp: otpValue,
+				otpType: "user",
+				expiresAt: Date.now() + 600000, // OTP valid for 10 minutes
+			});
+
+			await sendEmail(
+				email,
+				"Reset Your Password - OTP Verification Code",
+				"Please use the OTP code in the app to reset your password.",
+				`
+				<p>Dear ${user.name},</p>
+				<p>We received a request to reset your password. Please use the OTP code below to proceed with resetting your password. This code is valid for 10 minutes:</p>
+				<h2 style="color: #4CAF50;">${otpValue}</h2>
+				<p>If you did not request a password reset, please disregard this email.</p>
+				<p>Best regards,<br>Glimmr Team</p>
+				`,
+			);
+
+			ResponseHandler.send(res, 200, "OTP sent to your email");
+		} catch (otpError) {
+			await User.findByIdAndDelete(user._id);
+			return ErrorHandler.send(
+				res,
+				500,
+				"Failed to set up OTP verification. Please try again.",
+			);
+		}
+	} catch (err: any) {
+		return ErrorHandler.send(res, 500, "Internal Server Error");
+	}
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+	const { password, userId } = req.body;
+
+	try {
+		if (!password || !userId) {
+			return ErrorHandler.send(
+				res,
+				400,
+				"Please provide a new password and user ID",
+			);
+		}
+
+		const user = await User.findOne({ _id: userId });
+		if (!user) {
+			return ErrorHandler.send(res, 404, "User not found");
+		}
+
+		user.password = await bcrypt.hash(password, 10);
+		await user.save();
+
+		ResponseHandler.send(res, 200, "Password updated successfully");
+	} catch (err: any) {
+		return ErrorHandler.send(res, 500, "Internal Server Error");
+	}
+};
