@@ -4,10 +4,11 @@ import { Request, Response } from "express";
 import ResponseHandler from "../utils/ResponseHandler";
 import ErrorHandler from "../utils/ErrorHandler";
 import User from "../models/user/User.model";
-// import generateOTP from "../helpers/generateOTP";
+import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../config/constants";
 
 export const verifyOTP = async (req: Request, res: Response) => {
-	const { otp } = req.body;
+	const { otp, purpose } = req.body;
 
 	try {
 		const findOTP = await VerifyOTP.findOne({
@@ -25,25 +26,50 @@ export const verifyOTP = async (req: Request, res: Response) => {
 			return;
 		}
 
-		if (findOTP.otpType === "user") {
+		if (purpose === "password-reset") {
+			// If the OTP is for password reset
 			const user = await User.findById(findOTP.userId);
 			if (!user) {
 				return ErrorHandler.send(res, 404, "User not found");
 			}
-			user.verified = true;
-			await user.save();
+
+			// Generate a temporary JWT token for password reset
+			if (!JWT_SECRET) {
+				return ErrorHandler.send(res, 404, "JWT secret no found");
+			}
+			const resetToken = jwt.sign({ userId: user._id }, JWT_SECRET, {
+				expiresIn: "15m",
+			});
+
+			// Send the reset token to the frontend
+			ResponseHandler.send(
+				res,
+				200,
+				"OTP verified successfully for password reset",
+				resetToken,
+			);
 		} else {
-			const findOtp = await VerifyOTP.findOne({ otp, otpType: "shop" });
-			const shop = await Shop.findById({ _id: findOtp?.userId });
-			if (!shop) {
-				return ErrorHandler.send(res, 404, "Shop not found");
+			// For normal user/shop verification
+			if (findOTP.otpType === "user") {
+				const user = await User.findById(findOTP.userId);
+				if (!user) {
+					return ErrorHandler.send(res, 404, "User not found");
+				}
+				user.verified = true;
+				await user.save();
+			} else {
+				const shop = await Shop.findById(findOTP.userId);
+				if (!shop) {
+					return ErrorHandler.send(res, 404, "Shop not found");
+				}
+				shop.verified = true;
+				await shop.save();
 			}
 
-			shop.verified = true;
-			await shop.save();
+			ResponseHandler.send(res, 200, "OTP verified successfully");
 		}
 
-		ResponseHandler.send(res, 200, "OTP verified successfully");
+		// Delete OTP record after successful verification
 		await findOTP.deleteOne();
 	} catch (err: any) {
 		return ErrorHandler.send(res, 500, "Internal Server Error");
