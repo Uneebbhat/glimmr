@@ -5,10 +5,10 @@ import ErrorHandler from "../../utils/ErrorHandler";
 import Shop from "../../models/shop/Shop.model";
 import bcrypt from "bcrypt";
 import generateToken from "../../helpers/generateToken";
-import generateOTP from "../../helpers/generateOTP";
 import sendEmail from "../../utils/sendEmail";
 import verifySentOTP from "../../helpers/verifySentOTP";
 import ShopDTO from "../../dto/ShopDTO.dto";
+import ShopLoginSchemaSchema from "../../schemas/shop/ShopLoginSchema.schema";
 
 export const createShop = async (
 	req: Request,
@@ -74,7 +74,7 @@ export const createShop = async (
 				"Please use the OTP code in the app to complete your shop setup.",
 				`
 	<p>Dear ${shopName},</p>
-	<p>Welcome to Glimmr! We're thrilled to have you onboard. To finalize your shop setup, please enter the OTP code below within the next 5 minutes:</p>
+	<p>Welcome to Glimmr! We're thrilled to have you on board. To finalize your shop setup, please enter the OTP code below within the next 5 minutes:</p>
 	<h2 style="color: #4CAF50;">${otpValue}</h2>
 	<p>If you did not request this setup, please disregard this email.</p>
 	<p>Warm regards,<br>The Glimmr Team</p>
@@ -101,3 +101,44 @@ export const createShop = async (
 		return ErrorHandler.send(res, 500, "Internal Server Error");
 	}
 };
+
+export const shopLogin = async (req: Request, res: Response, next: NextFunction) => {
+	const {error} = ShopLoginSchemaSchema.validate(req.body)
+	if (error) {
+		return next(error);
+	}
+		const {shopEmail, password, shopPhoneNumber} = req.body;
+	try {
+		const existingShop = await Shop.findOne({
+			$or: [{shopEmail}, {shopPhoneNumber}]
+		})
+		if(!existingShop) {
+			return ErrorHandler.send(res, 404, "Shop not found");
+		}
+
+		const decryptPassword = await bcrypt.compare(password, existingShop.password);
+		if(!decryptPassword) {
+			return ErrorHandler.send(res, 401, "Invalid credentials");
+		}
+
+		const token = generateToken(
+			{
+				_id: existingShop?._id!.toString(),
+				name: existingShop?.shopName ?? "",
+				email: existingShop?.shopEmail ?? "",
+			},
+			res,
+		);
+
+		ResponseHandler.send(
+			res,
+			200,
+			"Login successfully",
+			existingShop ? new ShopDTO(existingShop) : undefined,
+			token,
+		);
+
+	} catch (err: any) {
+		return ErrorHandler.send(res, 500, "Internal Server Error");
+	}
+}

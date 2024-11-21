@@ -5,6 +5,7 @@ config();
 const PORT = process.env.PORT;
 const MONGODB_URI = process.env.MONGODB_CONNECTION_STRING;
 const JWT_SECRET = process.env.JWT_SECRET;
+const CLOUD_NAME = process.env.CLOUDINARY_NAME;
 const CLOUD_API_KEY = process.env.CLOUDINARY_API_KEY;
 const CLOUD_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 const DEFAULT_IMG = process.env.DEFAULT_IMAGE;
@@ -19,6 +20,7 @@ export {
 	PORT,
 	MONGODB_URI,
 	JWT_SECRET,
+	CLOUD_NAME,
 	CLOUD_API_KEY,
 	CLOUD_API_SECRET,
 	DEFAULT_IMG,
