@@ -89,8 +89,12 @@ export const signup = async (
 			userDTO,
 			token,
 		);
-	} catch (err: any) {
-		return ErrorHandler.send(res, 500, "Internal Server Error");
+	} catch (error: any) {
+		return ErrorHandler.send(
+			res,
+			500,
+			`Internal Server Error ${error.message}`,
+		);
 	}
 };
 
@@ -135,8 +139,12 @@ export const login = async (req: Request, res: Response) => {
 			existingUser ? new UserDTO(existingUser) : undefined,
 			token,
 		);
-	} catch (err: any) {
-		return ErrorHandler.send(res, 500, "Internal Server Error");
+	} catch (error: any) {
+		return ErrorHandler.send(
+			res,
+			500,
+			`Internal Server Error ${error.message}`,
+		);
 	}
 };
 
@@ -185,8 +193,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
 				"Failed to set up OTP verification. Please try again.",
 			);
 		}
-	} catch (err: any) {
-		return ErrorHandler.send(res, 500, "Internal Server Error");
+	} catch (error: any) {
+		return ErrorHandler.send(
+			res,
+			500,
+			`Internal Server Error ${error.message}`,
+		);
 	}
 };
 
@@ -211,7 +223,11 @@ export const resetPassword = async (req: Request, res: Response) => {
 		await user.save();
 
 		ResponseHandler.send(res, 200, "Password updated successfully");
-	} catch (err: any) {
-		return ErrorHandler.send(res, 500, "Internal Server Error");
+	} catch (error: any) {
+		return ErrorHandler.send(
+			res,
+			500,
+			`Internal Server Error ${error.message}`,
+		);
 	}
 };

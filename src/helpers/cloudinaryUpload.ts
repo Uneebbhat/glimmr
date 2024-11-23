@@ -5,10 +5,14 @@ import cloudinaryConfig from "../config/cloudinary";
 
 cloudinaryConfig();
 
-const cloudinaryUpload = async (filepath: string, options = {}, res: Response) => {
+const cloudinaryUpload = async (
+	filepath: string,
+	options = {},
+	res: Response,
+) => {
 	try {
 		return await cloudinary.uploader.upload(filepath, options);
-	} catch (err: any) {
+	} catch (error: any) {
 		return ErrorHandler.send(res, 400, "Error while uploading image");
 	}
 };

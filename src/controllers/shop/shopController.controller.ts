@@ -97,27 +97,38 @@ export const createShop = async (
 		const shopDTO = new ShopDTO(newShop);
 
 		ResponseHandler.send(res, 201, "Shop created successfully", shopDTO, token);
-	} catch (err: any) {
-		return ErrorHandler.send(res, 500, "Internal Server Error");
+	} catch (error: any) {
+		return ErrorHandler.send(
+			res,
+			500,
+			`Internal Server Error ${error.message}`,
+		);
 	}
 };
 
-export const shopLogin = async (req: Request, res: Response, next: NextFunction) => {
-	const {error} = ShopLoginSchemaSchema.validate(req.body)
+export const shopLogin = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	const { error } = ShopLoginSchemaSchema.validate(req.body);
 	if (error) {
 		return next(error);
 	}
-		const {shopEmail, password, shopPhoneNumber} = req.body;
+	const { shopEmail, password, shopPhoneNumber } = req.body;
 	try {
 		const existingShop = await Shop.findOne({
-			$or: [{shopEmail}, {shopPhoneNumber}]
-		})
-		if(!existingShop) {
+			$or: [{ shopEmail }, { shopPhoneNumber }],
+		});
+		if (!existingShop) {
 			return ErrorHandler.send(res, 404, "Shop not found");
 		}
 
-		const decryptPassword = await bcrypt.compare(password, existingShop.password);
-		if(!decryptPassword) {
+		const decryptPassword = await bcrypt.compare(
+			password,
+			existingShop.password,
+		);
+		if (!decryptPassword) {
 			return ErrorHandler.send(res, 401, "Invalid credentials");
 		}
 
@@ -137,8 +148,11 @@ export const shopLogin = async (req: Request, res: Response, next: NextFunction)
 			existingShop ? new ShopDTO(existingShop) : undefined,
 			token,
 		);
-
-	} catch (err: any) {
-		return ErrorHandler.send(res, 500, "Internal Server Error");
+	} catch (error: any) {
+		return ErrorHandler.send(
+			res,
+			500,
+			`Internal Server Error ${error.message}`,
+		);
 	}
-}
+};
