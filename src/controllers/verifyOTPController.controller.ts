@@ -71,8 +71,12 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
 		// Delete OTP record after successful verification
 		await findOTP.deleteOne();
-	} catch (err: any) {
-		return ErrorHandler.send(res, 500, "Internal Server Error");
+	} catch (error: any) {
+		return ErrorHandler.send(
+			res,
+			500,
+			`Internal Server Error ${error.message}`,
+		);
 	}
 };
 
@@ -127,8 +131,12 @@ export const generateNewOTP = async (req: Request, res: Response) => {
 		}
 
 		ResponseHandler.send(res, 201, "OTP created", generateNewOTP);
-	} catch (err: any) {
-		console.error("Error generating OTP:", err);
-		return ErrorHandler.send(res, 500, "Internal Server Error");
+	} catch (error: any) {
+		// console.error("Error generating OTP:", error.message);
+		return ErrorHandler.send(
+			res,
+			500,
+			`Internal Server Error ${error.message}`,
+		);
 	}
 };
