@@ -2,12 +2,7 @@ import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config/constants";
 import ErrorHandler from "../utils/ErrorHandler";
 import { Response } from "express";
-
-interface UserToken {
-	_id: string;
-	name: string;
-	email: string;
-}
+import { UserToken } from "../shared/interfaces/UserInterface";
 
 const generateToken = (user: UserToken, res: Response) => {
 	if (!JWT_SECRET) {

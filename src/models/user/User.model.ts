@@ -1,14 +1,6 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { DEFAULT_IMG } from "../../config/constants";
-
-interface IUser extends Document {
-	profilePic: string;
-	name: string;
-	email: string;
-	phoneNumber: string;
-	password: string;
-	verified: boolean;
-}
+import { IUser } from "../../shared/interfaces/UserInterface";
 
 const userModel = new Schema<IUser>(
 	{

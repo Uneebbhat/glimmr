@@ -1,6 +1,7 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import { IShopService } from "../../shared/index";
 
-enum ServiceCategory {
+export enum ServiceCategory {
 	Haircut = "Haircut",
 	Nails = "Nails",
 	Facial = "Facial",
@@ -9,18 +10,6 @@ enum ServiceCategory {
 	Waxing = "Waxing",
 	Makeup = "Makeup",
 	Massage = "Massage",
-}
-
-interface IShopService extends Document {
-	shopId: Types.ObjectId;
-	serviceName: string;
-	category: ServiceCategory;
-	serviceDescription: string;
-	servicePrice: number;
-	serviceDiscount?: number;
-	doorStepPrice?: number;
-	doorStepDiscount?: number;
-	serviceImages: string[];
 }
 
 const shopServiceModel = new Schema<IShopService>(

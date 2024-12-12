@@ -1,13 +1,6 @@
 import VerifyOTP from "../models/VerifyOTP.model";
-import generateOTP from "./generateOTP";
-
-interface VerifyOTPPROPS {
-	_id?: string | any;
-	userId: string | any;
-	otp: string | number;
-	expiresAt: Date | number;
-	otpType: string;
-}
+import { VerifyOTPPROPS } from "../shared/interfaces/OtpInterface";
+// import generateOTP from "./generateOTP";
 
 const verifySentOTP = async (user: VerifyOTPPROPS) => {
 	const newOTP = new VerifyOTP({

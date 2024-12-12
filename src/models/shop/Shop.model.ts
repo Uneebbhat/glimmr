@@ -1,20 +1,6 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { DEFAULT_SHOP } from "../../config/constants";
-
-interface IShop extends Document {
-	shopProfilePic: string;
-	ownerName: string;
-	shopName: string;
-	shopEmail: string;
-	shopPhoneNumber: string;
-	password: string;
-	location: {
-		shopAddress: string;
-		shopCity: string;
-		cityArea: string;
-	};
-	verified: boolean;
-}
+import { IShop } from "../../shared/interfaces/ShopInterface";
 
 const shopModel = new Schema<IShop>(
 	{

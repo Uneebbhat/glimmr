@@ -1,13 +1,5 @@
 import { Types } from "mongoose";
-
-interface UserDTOClass {
-	_id: string | Types.ObjectId;
-	name: string;
-	email: string;
-	profilePic: string;
-	phoneNumber: string;
-	verified: boolean;
-}
+import { UserDTOClass } from "../shared/interfaces/UserInterface";
 
 class UserDTO {
 	_id: string | Types.ObjectId;

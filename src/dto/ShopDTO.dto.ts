@@ -1,19 +1,5 @@
 import { Types } from "mongoose";
-
-interface ShopDTOClass {
-	_id: string | Types.ObjectId;
-	ownerName: string;
-	shopName: string;
-	shopEmail: string;
-	shopProfilePic: string;
-	shopPhoneNumber: string;
-	location: {
-		shopAddress: string;
-		shopCity: string;
-		cityArea: string;
-	};
-	verified: boolean;
-}
+import { ShopDTOClass } from "../shared/index";
 
 class ShopDTO {
 	_id: string | Types.ObjectId;

@@ -1,16 +1,9 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import { IVerifyOTP } from "../shared/interfaces/OtpInterface";
 
-enum OTPType {
+export enum OTPType {
 	user = "user",
 	shop = "shop",
-}
-
-interface IVerifyOTP extends Document {
-	userId: Types.ObjectId;
-	otp: string;
-	otpType: OTPType;
-	createdAt: Date;
-	expiresAt: Date;
 }
 
 const verifyOTPModel = new Schema<IVerifyOTP>({
