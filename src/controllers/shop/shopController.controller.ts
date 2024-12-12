@@ -9,6 +9,7 @@ import sendEmail from "../../utils/sendEmail";
 import verifySentOTP from "../../helpers/verifySentOTP";
 import ShopDTO from "../../dto/ShopDTO.dto";
 import ShopLoginSchemaSchema from "../../schemas/shop/ShopLoginSchema.schema";
+import User from "../../models/user/User.model";
 
 export const createShop = async (
 	req: Request,
@@ -42,6 +43,14 @@ export const createShop = async (
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 10);
+
+		const user = await User.findOne({ email: shopEmail });
+		// console.log(user);
+		// console.log(shopEmail);
+
+		if (shopEmail === user?.email) {
+			return ErrorHandler.send(res, 400, "Email already in use");
+		}
 
 		const newShop = await Shop.create({
 			ownerName,
@@ -94,7 +103,7 @@ export const createShop = async (
 			res,
 		);
 
-		const shopDTO = new ShopDTO(newShop);
+		const shopDTO = new ShopDTO(newShop as ShopDTO);
 
 		ResponseHandler.send(res, 201, "Shop created successfully", shopDTO, token);
 	} catch (error: any) {
@@ -115,11 +124,9 @@ export const shopLogin = async (
 	if (error) {
 		return next(error);
 	}
-	const { shopEmail, password, shopPhoneNumber } = req.body;
+	const { shopEmail, password } = req.body;
 	try {
-		const existingShop = await Shop.findOne({
-			$or: [{ shopEmail }, { shopPhoneNumber }],
-		});
+		const existingShop = await Shop.findOne({ shopEmail });
 		if (!existingShop) {
 			return ErrorHandler.send(res, 404, "Shop not found");
 		}
@@ -145,7 +152,7 @@ export const shopLogin = async (
 			res,
 			200,
 			"Login successfully",
-			existingShop ? new ShopDTO(existingShop) : undefined,
+			existingShop ? new ShopDTO(existingShop as ShopDTO) : undefined,
 			token,
 		);
 	} catch (error: any) {

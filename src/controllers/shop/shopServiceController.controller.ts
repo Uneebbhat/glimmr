@@ -88,7 +88,7 @@ export const getShopService = async (req: Request, res: Response) => {
 		let shopServices;
 		if (cache.has("shopServices")) {
 			shopServices = JSON.parse(cache.get("shopServices") as string);
-			ResponseHandler.send(res, 200, "Services found", {
+			ResponseHandler.send(res, 200, "Services found(cache)", {
 				length: shopServices.length,
 				shopServices,
 			});

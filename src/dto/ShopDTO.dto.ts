@@ -1,5 +1,7 @@
+import { Types } from "mongoose";
+
 interface ShopDTOClass {
-	_id: string | any;
+	_id: string | Types.ObjectId;
 	ownerName: string;
 	shopName: string;
 	shopEmail: string;
@@ -14,7 +16,7 @@ interface ShopDTOClass {
 }
 
 class ShopDTO {
-	_id: string | any;
+	_id: string | Types.ObjectId;
 	ownerName: string;
 	shopName: string;
 	shopEmail: string;
