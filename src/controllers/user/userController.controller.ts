@@ -10,6 +10,7 @@ import UserLoginSchema from "../../schemas/user/UserLoginSchema.schema";
 import sendEmail from "../../utils/sendEmail";
 import generateOTP from "../../helpers/generateOTP";
 import verifySentOTP from "../../helpers/verifySentOTP";
+import { isTypeAliasDeclaration } from "typescript";
 
 export const signup = async (
 	req: Request,
@@ -81,7 +82,7 @@ export const signup = async (
 			res,
 		);
 
-		const userDTO = new UserDTO(newUser);
+		const userDTO = new UserDTO(newUser as UserDTO);
 		ResponseHandler.send(
 			res,
 			201,
@@ -104,11 +105,9 @@ export const login = async (req: Request, res: Response) => {
 		return ErrorHandler.send(res, 400, error.details[0].message);
 	}
 
-	const { email, phoneNumber, password } = req.body;
+	const { email, password } = req.body;
 	try {
-		const existingUser = await User.findOne({
-			$or: [{ email }, { phoneNumber }],
-		});
+		const existingUser = await User.findOne({ email });
 		if (!existingUser) {
 			return ErrorHandler.send(
 				res,
@@ -136,7 +135,7 @@ export const login = async (req: Request, res: Response) => {
 			res,
 			200,
 			"Login successfully",
-			existingUser ? new UserDTO(existingUser) : undefined,
+			existingUser ? new UserDTO(existingUser as UserDTO) : undefined,
 			token,
 		);
 	} catch (error: any) {

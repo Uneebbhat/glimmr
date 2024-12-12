@@ -1,5 +1,7 @@
+import { Types } from "mongoose";
+
 interface UserDTOClass {
-	_id: string | any;
+	_id: string | Types.ObjectId;
 	name: string;
 	email: string;
 	profilePic: string;
@@ -8,7 +10,7 @@ interface UserDTOClass {
 }
 
 class UserDTO {
-	_id: string | any;
+	_id: string | Types.ObjectId;
 	name: string;
 	email: string;
 	profilePic: string;
